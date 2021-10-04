@@ -1,4 +1,5 @@
 #!/bin/bash
+
 tail -F /mysql_backup.log &
 
 if [ "${INIT_BACKUP}" -gt "0" ]; then

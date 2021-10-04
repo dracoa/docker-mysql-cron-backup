@@ -21,6 +21,7 @@ RUN apk add --update \
         mysql-client \
         gzip \
         openssl \
+        openssh \
         mariadb-connector-c && \
     rm -rf /var/cache/apk/*
 
@@ -32,6 +33,7 @@ ENV CRON_TIME="0 3 * * sun" \
     TIMEOUT="10s"
 
 COPY ["run.sh", "backup.sh", "restore.sh", "/"]
+
 RUN mkdir /backup && \
     chmod 777 /backup && \ 
     chmod 755 /run.sh /backup.sh /restore.sh && \
@@ -40,4 +42,4 @@ RUN mkdir /backup && \
 
 VOLUME ["/backup"]
 
-CMD dockerize -wait tcp://${MYSQL_HOST}:${MYSQL_PORT} -timeout ${TIMEOUT} /run.sh
+CMD /run.sh

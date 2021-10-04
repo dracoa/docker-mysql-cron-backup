@@ -1,4 +1,7 @@
 #!/bin/bash
+
+if [ -z ${MYSQL_ROOT_PASSWORD_FILE+x} ]; then echo "MYSQL_ROOT_PASSWORD_FILE is recommended"; else MYSQL_PASSWORD=$(cat ${MYSQL_ROOT_PASSWORD_FILE}); fi
+
 [ -z "${MYSQL_USER}" ] && { echo "=> MYSQL_USER cannot be empty" && exit 1; }
 [ -z "${MYSQL_PASS:=$MYSQL_PASSWORD}" ] && { echo "=> MYSQL_PASS cannot be empty" && exit 1; }
 [ -z "${GZIP_LEVEL}" ] && { GZIP_LEVEL=6; }
@@ -9,7 +12,7 @@ DATABASES=${MYSQL_DATABASE:-${MYSQL_DB:-$(mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT
 DB_COUNTER=0
 for db in ${DATABASES}
 do
-  if [[ "$db" != "information_schema" ]] && [[ "$db" != "performance_schema" ]] && [[ "$db" != "mysql" ]] && [[ "$db" != _* ]]
+  if [[ "$db" != "information_schema" ]] && [[ "$db" != "performance_schema" ]] && [[ "$db" != "mysql" ]] && [[ "$db" != "sys" ]] && [[ "$db" != _* ]]
   then
     echo "==> Dumping database: $db"
     FILENAME=/backup/$DATE.$db.sql
@@ -21,6 +24,7 @@ do
       rm "$LATEST" 2> /dev/null
       cd /backup || exit && ln -s "$(basename "$FILENAME".gz)" "$(basename "$LATEST")"
       DB_COUNTER=$(( DB_COUNTER + 1 ))
+      scp -o StrictHostKeyChecking=no -i ${SCP_ID_RSA} ${FILENAME}.gz ${SCP_HOST}/${FILENAME}.gz
     else
       rm -rf "$FILENAME"
     fi
