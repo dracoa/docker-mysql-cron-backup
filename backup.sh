@@ -17,14 +17,14 @@ do
     echo "==> Dumping database: $db"
     FILENAME=/backup/$DATE.$db.sql
     LATEST=/backup/latest.$db.sql.gz
-    if mysqldump --single-transaction -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" "$db" $MYSQLDUMP_OPTS > "$FILENAME"
+    if mysqldump --single-transaction --routines -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" "$db" $MYSQLDUMP_OPTS > "$FILENAME"
     then
       gzip "-$GZIP_LEVEL" -f "$FILENAME"
       echo "==> Creating symlink to latest backup: $(basename "$FILENAME".gz)"
       rm "$LATEST" 2> /dev/null
       cd /backup || exit && ln -s "$(basename "$FILENAME".gz)" "$(basename "$LATEST")"
       DB_COUNTER=$(( DB_COUNTER + 1 ))
-      scp -o StrictHostKeyChecking=no -i ${SCP_ID_RSA} ${FILENAME}.gz ${SCP_HOST}/${FILENAME}.gz
+      scp -o StrictHostKeyChecking=no -i ${SCP_ID_RSA} ${FILENAME}.gz ${SCP_HOST}${FILENAME}.gz
     else
       rm -rf "$FILENAME"
     fi
